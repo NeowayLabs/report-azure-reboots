@@ -1,0 +1,33 @@
+{
+  "name": "report-azure-reboots",
+  "author": "Neoway Tech Teams",
+  "contributors": [
+    "Neoway Tech Teams <techteams@neoway.com.br>",
+    "Vitor Arins <vitor.arins@neoway.com.br>"
+  ],
+  "version": "0.1.0",
+  "description": "Report Azure VM reboots",
+  "tags": [
+    "azure",
+    "sdk"
+  ],
+  "keywords": [
+    "node",
+    "azure"
+  ],
+  "main": "./index.js",
+  "license": "MIT",
+  "dependencies": {
+    "async": "^2.5.0",
+    "azure-arm-compute": "^3.0.0-preview",
+    "azure-arm-resource": "^2.0.0-preview",
+    "ms-rest-azure": "^2.2.1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/NeowayLabs/report-azure-reboots"
+  },
+  "bugs": {
+    "url": "https://github.com/NeowayLabs/report-azure-reboots/issues"
+  }
+}

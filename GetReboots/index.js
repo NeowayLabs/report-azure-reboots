@@ -1,17 +1,66 @@
-module.exports = function (context, req) {
-    context.log('JavaScript HTTP trigger function processed a request.');
+'use strict';
 
-    if (req.query.name || (req.body && req.body.name)) {
-        context.res = {
-            // status: 200, /* Defaults to 200 */
-            body: "Hello " + (req.query.name || req.body.name)
-        };
+var util = require('util');
+var async = require('async');
+var msRestAzure = require('ms-rest-azure');
+var ComputeManagementClient = require('azure-arm-compute');
+var ResourceManagementClient = require('azure-arm-resource').ResourceManagementClient;
+
+_validateEnvironmentVariables();
+var clientId = process.env['CLIENT_ID'];
+var domain = process.env['DOMAIN'];
+var secret = process.env['APPLICATION_SECRET'];
+var subscriptionId = process.env['AZURE_SUBSCRIPTION_ID'];
+var resourceClient, computeClient;
+
+///////////////////////////////////////////
+//     Entrypoint for sample script      //
+///////////////////////////////////////////
+
+msRestAzure.loginWithServicePrincipalSecret(clientId, secret, domain, function (err, credentials, subscriptions) {
+  if (err) return console.log(err);
+  resourceClient = new ResourceManagementClient(credentials, subscriptionId);
+  computeClient = new ComputeManagementClient(credentials, subscriptionId);
+  
+  async.series([
+    function (callback) {
+      //////////////////////////////////////////////////////
+      //Task5: Lisitng All the VMs under the subscription.//
+      //////////////////////////////////////////////////////
+      console.log('\n>>>>>>>Start of Task5: List all vms under the current subscription.');
+      computeClient.virtualMachines.listAll(function (err, result) {
+        if (err) {
+          console.log(util.format('\n???????Error in Task5: while listing all the vms under ' + 
+            'the current subscription:\n%s', util.inspect(err, { depth: null })));
+          callback(err);
+        } else {
+          console.log(util.format('\n######End of Task5: List all the vms under the current ' + 
+            'subscription is successful.\n%s', util.inspect(result, { depth: null })));
+          callback(null, result);
+        }
+      });
     }
-    else {
-        context.res = {
-            status: 400,
-            body: "Please pass a name on the query string or in the request body"
-        };
+  ],
+  //final callback to be run after all the tasks
+  function (err, results) {
+    if (err) {
+      console.log(util.format('\n??????Error occurred in one of the operations.\n%s', 
+        util.inspect(err, { depth: null })));
+    } else {
+      console.log(util.format('\n######All the operations have completed successfully. ' + 
+        'The final set of results are as follows:\n%s', util.inspect(results, { depth: null })));
     }
-    context.done();
-};
+    return;
+  });
+});
+
+function _validateEnvironmentVariables() {
+  var envs = [];
+  if (!process.env['CLIENT_ID']) envs.push('CLIENT_ID');
+  if (!process.env['DOMAIN']) envs.push('DOMAIN');
+  if (!process.env['APPLICATION_SECRET']) envs.push('APPLICATION_SECRET');
+  if (!process.env['AZURE_SUBSCRIPTION_ID']) envs.push('AZURE_SUBSCRIPTION_ID');
+  if (envs.length > 0) {
+    throw new Error(util.format('please set/export the following environment variables: %s', envs.toString()));
+  }
+}
