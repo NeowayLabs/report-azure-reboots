@@ -20,48 +20,41 @@ var resourceClient, computeClient;
 module.exports = function (context, req) {
     context.log('JavaScript HTTP trigger function processed a request.');
 
-    if (req.query.name || (req.body && req.body.name)) {
-        msRestAzure.loginWithServicePrincipalSecret(clientId, secret, domain, function (err, credentials, subscriptions) {
-            if (err) return console.log(err);
-            resourceClient = new ResourceManagementClient(credentials, subscriptionId);
-            computeClient = new ComputeManagementClient(credentials, subscriptionId);
+    msRestAzure.loginWithServicePrincipalSecret(clientId, secret, domain, function (err, credentials, subscriptions) {
+        if (err) return console.log(err);
+        resourceClient = new ResourceManagementClient(credentials, subscriptionId);
+        computeClient = new ComputeManagementClient(credentials, subscriptionId);
 
-            async.series([
-                function (callback) {
-                    console.log('\n>>>>>>>Start of Task5: List all vms under the current subscription.');
-                    computeClient.virtualMachines.listAll(function (err, result) {
-                        if (err) {
-                            console.log(util.format('\n???????Error in Task5: while listing all the vms under ' +
-                                                    'the current subscription:\n%s', util.inspect(err, { depth: null })));
-                            callback(err);
-                        } else {
-                            console.log(util.format('\n######End of Task5: List all the vms under the current ' +
-                                                    'subscription is successful.\n%s', util.inspect(result, { depth: null })));
-                            callback(null, result);
-                        }
-                    });
-                }],
-                //final callback to be run after all the tasks
-                function (err, results) {
+        async.series([
+            function (callback) {
+                console.log('\n>>>>>>>Start of Task5: List all vms under the current subscription.');
+                computeClient.virtualMachines.listAll(function (err, result) {
                     if (err) {
-                        console.log(util.format('\n??????Error occurred in one of the operations.\n%s', 
-                                                util.inspect(err, { depth: null })));
+                        console.log(util.format('\n???????Error in Task5: while listing all the vms under ' +
+                                                'the current subscription:\n%s', util.inspect(err, { depth: null })));
+                        callback(err);
                     } else {
-                        console.log(util.format('\n######All the operations have completed successfully. ' + 
-                                                'The final set of results are as follows:\n%s', util.inspect(results, { depth: null })));
-                        context.res = results;
+                        console.log(util.format('\n######End of Task5: List all the vms under the current ' +
+                                                'subscription is successful.\n%s', util.inspect(result, { depth: null })));
+                        callback(null, result);
                     }
-                    return;
-                });
-        });
-    }
-    else {
-        context.res = {
-            status: 400,
-            body: "Please pass a name on the query string or in the request body"
-        };
-    }
-    context.done();
+            });
+        }],
+            //final callback to be run after all the tasks
+            function (err, results) {
+                if (err) {
+                    console.log(util.format('\n??????Error occurred in one of the operations.\n%s', 
+                                            util.inspect(err, { depth: null })));
+                } else {
+                    console.log(util.format('\n######All the operations have completed successfully. ' + 
+                                            'The final set of results are as follows:\n%s', util.inspect(results, { depth: null })));
+                    console.log(results);
+                    context.res = results;
+                    context.done();
+                }
+                return;
+            });
+    });
 };
 
 
